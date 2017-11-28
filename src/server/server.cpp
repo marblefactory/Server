@@ -4,9 +4,13 @@
 #include <iostream>
 #include <boost/algorithm/string/split.hpp>
 #include <boost/algorithm/string/classification.hpp>
+#include "../../libs/json.hpp"
+#include "../json/action_parser.hpp"
 
 using std::cout;
 using std::endl;
+using nlohmann::json;
+using json_parsing::parse_action;
 
 // Create a server listening on the specified port for connections, for
 // IP version 4.
@@ -62,12 +66,37 @@ void Server::listen_to_client() throw(boost::system::system_error) {
             vector<string> messages;
             split(messages, str, boost::is_any_of("$"));
 
-            // TODO: Send messages
-            for(auto& s: messages) {
-                if (s != ""){
-                    cout << "\t" << s << endl;
-                }
-            }
+            vector<Action*> actions = parse_messages(messages);
+            notify_observers(actions);
+        }
+    }
+}
+
+// Parses the string message recieved into actions.
+vector<Action*> Server::parse_messages(vector<string> messages) {
+    vector<Action*> actions;
+
+    for (auto &message: messages) {
+        cout << "JSON: " << message << endl;
+        json j = json::parse(message);
+        Action *action = parse_action(j);
+        actions.push_back(action);
+    }
+
+    return actions;
+}
+
+// Adds an observer. This recieves a notification from the server when
+// a parsed JSON message is recieved.
+void Server::add_observer(ServerObserverInterface *observer) {
+    observers.push_back(observer);
+}
+
+// Notifies all observers of the recieved actions.
+void Server::notify_observers(vector<Action*> actions) {
+    for (auto *action: actions) {
+        for (ServerObserverInterface *observer: observers) {
+            observer->notify(action);
         }
     }
 }

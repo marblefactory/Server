@@ -44,10 +44,10 @@ TEST_PARSER 		 = $(TEST_OBJECT_PARSER) $(TEST_ACTION_PARSER) $(TEST_LOCATION_PAR
 
 TESTING_MAIN = $(SRC) $(TEST_ACTIONS) $(TEST_LOCATIONS) $(TEST_PARSER) $(TEST_DIR)/main.cpp
 
-# default:
-# 	$(CC) $(CFLAGS) $(MAIN) -o $(EXEC) $(LINKER)
-
 default:
+	$(CC) $(CFLAGS) $(MAIN) -o $(EXEC) $(LINKER)
+
+testing:
 	$(CC) $(CFLAGS) $(TESTING_MAIN) -o $(EXEC) $(LINKER)
 
 clean:
